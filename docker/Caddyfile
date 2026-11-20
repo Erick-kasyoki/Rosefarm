@@ -1,0 +1,5 @@
+# Automatic HTTPS (Let's Encrypt). Needs DOMAIN in .env pointing at this server, and ports 80 + 443 open.
+{$DOMAIN} {
+    encode gzip
+    reverse_proxy app:80
+}

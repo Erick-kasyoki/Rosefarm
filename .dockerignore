@@ -1,0 +1,5 @@
+.git
+.env
+backups
+pos/api/config.local.php
+*.zip

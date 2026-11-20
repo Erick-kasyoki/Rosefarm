@@ -1,0 +1,4 @@
+# Only index.php is public. config.php, config.local.php, db.php, installer.php ... must never be requested directly.
+<FilesMatch "^(?!index\.php$).*\.php$">
+  Require all denied
+</FilesMatch>

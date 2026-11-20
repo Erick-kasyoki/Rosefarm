@@ -1,0 +1,15 @@
+<?php
+// Copy this file to config.local.php and edit it. config.local.php is ignored by git and blocked from the web.
+// Use it where you cannot set environment variables (XAMPP, cPanel, shared hosting).
+return [
+    'env'      => 'development',      // XAMPP / local testing. Remove this line (or use 'production') on a live server.
+    'debug'    => true,               // show technical error details. Never on a live server.
+    'host'     => 'localhost',
+    'port'     => 5432,
+    'dbname'   => 'pos_db',
+    'user'     => 'postgres',
+    'password' => 'YOUR_POSTGRES_PASSWORD',
+    // 'sslmode' => 'require',        // managed PostgreSQL usually needs this
+    // 'timezone' => 'Africa/Nairobi',
+    // 'trust_proxy' => true,         // only behind a reverse proxy you control
+];
