@@ -11,10 +11,11 @@ COPY docker/php.ini     /usr/local/etc/php/conf.d/zz-pos.ini
 COPY docker/apache.conf /etc/apache2/conf-available/pos.conf
 RUN a2enconf pos
 
-COPY pos/ /var/www/html/
+COPY public/ /var/www/html/
+COPY config/ /var/www/config/
 COPY docker/entrypoint.sh /usr/local/bin/pos-entrypoint
 RUN chmod +x /usr/local/bin/pos-entrypoint \
- && chown -R www-data:www-data /var/www/html
+ && chown -R www-data:www-data /var/www/html /var/www/config
 
 ENV APP_ENV=production
 EXPOSE 80

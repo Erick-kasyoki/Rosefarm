@@ -1,5 +1,5 @@
 .git
 .env
 backups
-pos/api/config.local.php
+config/config.local.php
 *.zip

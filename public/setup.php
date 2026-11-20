@@ -1,12 +1,12 @@
 <?php
 /**
  * Local installer for XAMPP / a computer you sit at.
- * Open  http://localhost/pos/setup.php  once. It creates the database and tables and your first admin login.
+ * Open  http://localhost/pos/public/setup.php  once. It creates the database and tables and your first admin login.
  *
  * It is deliberately DISABLED on a live server (APP_ENV=production, which is the default): use
  *     php bin/install.php
- * there instead (see DEPLOYMENT.md). To use this page locally, create api/config.local.php from
- * api/config.local.php.example (it sets 'env' => 'development' and your PostgreSQL password).
+ * there instead (see DEPLOYMENT.md). To use this page locally, create config/config.local.php from
+ * config/config.local.php.example (it sets 'env' => 'development' and your PostgreSQL password).
  */
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store');
@@ -14,7 +14,7 @@ header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 
 require __DIR__ . '/api/installer.php';
-$cfg   = require __DIR__ . '/api/config.php';
+$cfg   = require dirname(__DIR__) . '/config/config.php';
 $steps = [];
 $fatal = null;
 $done  = false;
@@ -27,9 +27,9 @@ $host = strtolower(preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? ''));
 $proxied = isset($_SERVER['HTTP_X_FORWARDED_FOR']) || isset($_SERVER['HTTP_X_FORWARDED_HOST']) || isset($_SERVER['HTTP_FORWARDED']) || isset($_SERVER['HTTP_X_REAL_IP']);
 
 if ($cfg['env'] === 'production') {
-    $fatal = 'This page is switched off because the app is in production mode. On a server run "php bin/install.php" instead (see DEPLOYMENT.md). On your own computer (XAMPP), copy api/config.local.php.example to api/config.local.php, set your PostgreSQL password, and reload this page.';
+    $fatal = 'This page is switched off because the app is in production mode. On a server run "php bin/install.php" instead (see DEPLOYMENT.md). On your own computer (XAMPP), copy config/config.local.php.example to config/config.local.php, set your PostgreSQL password, and reload this page.';
 } elseif (!in_array($ip, ['127.0.0.1', '::1'], true) || !in_array($host, ['localhost', '127.0.0.1', '[::1]', '::1'], true) || $proxied) {
-    $fatal = 'For safety, the installer only runs from the server computer itself (http://localhost/pos/setup.php).';
+    $fatal = 'For safety, the installer only runs from the server computer itself (http://localhost/pos/public/setup.php).';
 }
 
 if (!$fatal) {

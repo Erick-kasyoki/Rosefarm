@@ -6,7 +6,7 @@ The app is PHP 8 + PostgreSQL + plain JavaScript. Pick **one** way to run it:
 |---|---|---|
 | **A. Docker** (recommended) | Any VPS or a spare PC in the shop | ~10 min |
 | **B. Ubuntu server** with Apache or nginx | You already manage a Linux server | ~30 min |
-| **C. Windows / XAMPP** | One shop computer, no internet exposure | see `pos/README.md` |
+| **C. Windows / XAMPP** | One shop computer, no internet exposure | see `README.md` |
 
 > Shared hosting that only offers MySQL will **not** work: this app needs PostgreSQL (`pdo_pgsql`).
 
@@ -51,12 +51,13 @@ sudo a2enmod headers deflate rewrite
 sudo -u postgres psql -c "CREATE USER pos WITH PASSWORD 'CHANGE-ME-long-random';" \
                       -c "CREATE DATABASE pos_db OWNER pos;"
 
-# app files: copy the CONTENTS of the pos/ folder to /var/www/pos
-sudo mkdir -p /var/www/pos && sudo cp -r pos/. /var/www/pos/
+# app files: keep config outside the public web root
+sudo mkdir -p /var/www/pos
+sudo cp -r public config /var/www/pos/
 sudo chown -R www-data:www-data /var/www/pos
 ```
 
-Create `/var/www/pos/api/config.local.php` (never commit it; it is blocked from the web):
+Create `/var/www/pos/config/config.local.php` (never commit it; it is outside the public web root):
 
 ```php
 <?php
@@ -72,7 +73,7 @@ return [
 Create the tables and the first admin (the password is printed once; or set `ADMIN_PASSWORD=...` in front of the command):
 
 ```bash
-cd /var/www/pos && sudo -u www-data ADMIN_USERNAME=admin php bin/install.php
+cd /var/www/pos/public && sudo -u www-data ADMIN_USERNAME=admin php bin/install.php
 ```
 
 Apache site (`/etc/apache2/sites-available/pos.conf`), then `sudo a2ensite pos && sudo systemctl reload apache2`:
@@ -80,8 +81,8 @@ Apache site (`/etc/apache2/sites-available/pos.conf`), then `sudo a2ensite pos &
 ```apache
 <VirtualHost *:80>
     ServerName pos.yourshop.co.ke
-    DocumentRoot /var/www/pos
-    <Directory /var/www/pos>
+    DocumentRoot /var/www/pos/public
+    <Directory /var/www/pos/public>
         AllowOverride All
         Require all granted
     </Directory>
@@ -93,7 +94,7 @@ HTTPS (free certificate): `sudo apt install certbot python3-certbot-apache && su
 **nginx instead of Apache?** `.htaccess` files are ignored by nginx, so add these rules to the server block (before the `\.php$` block):
 
 ```nginx
-root /var/www/pos;  index index.php;
+root /var/www/pos/public;  index index.php;
 location ~ ^/(database|bin)/                 { deny all; }
 location ~ ^/api/(?!index\.php$).*\.php$     { deny all; }
 location = /setup.php                        { deny all; }
@@ -104,13 +105,13 @@ location ~ \.php$ { include snippets/fastcgi-php.conf; fastcgi_pass unix:/run/ph
 ```
 and install `php8.3-fpm php-pgsql` instead of the Apache module. Use `config.local.php` for settings (PHP-FPM does not see shell environment variables).
 
-**Updating:** copy the new files over `/var/www/pos` (keep `api/config.local.php`), then `sudo -u www-data php bin/install.php`. It is safe to repeat; the app also upgrades its own database structure on first use.
+**Updating:** copy the new files over `/var/www/pos` (keep `config/config.local.php`), then run `cd /var/www/pos/public && sudo -u www-data php bin/install.php`. It is safe to repeat; the app also upgrades its own database structure on first use.
 
 ---
 
 ## Settings reference
 
-Environment variables (Docker/`.env`) or the same names as keys in `api/config.local.php`:
+Environment variables (Docker/`.env`) or the same names as keys in `config/config.local.php`:
 
 | Variable | Meaning | Default |
 |---|---|---|
@@ -131,7 +132,7 @@ Environment variables (Docker/`.env`) or the same names as keys in `api/config.l
 
 1. **Run the smoke test** from any computer (it changes no data):
    ```bash
-   bash pos/bin/smoke-test.sh https://pos.yourshop.co.ke admin 'your-password'
+   bash public/bin/smoke-test.sh https://pos.yourshop.co.ke admin 'your-password'
    ```
    Every line should say `[ ok ]`. It checks the database link, login, role permissions, that internal files cannot be downloaded, and the security headers.
 2. In the app: **Settings** (store name, phone, currency, tax %), then **Products** (press *Load shop products* for the starter list, then fix prices and stock), **Users** (only an admin can create managers and cashiers here).
@@ -143,7 +144,7 @@ Environment variables (Docker/`.env`) or the same names as keys in `api/config.l
 
 ```bash
 # Ubuntu server (needs postgresql-client); nightly at 02:00, keeps 14 days in /var/backups/pos
-( crontab -l 2>/dev/null; echo "0 2 * * * ENV_FILE=/etc/pos.env /var/www/pos/bin/backup.sh >> /var/log/pos-backup.log 2>&1" ) | crontab -
+( crontab -l 2>/dev/null; echo "0 2 * * * ENV_FILE=/etc/pos.env /var/www/pos/public/bin/backup.sh >> /var/log/pos-backup.log 2>&1" ) | crontab -
 #   /etc/pos.env contains lines like  DB_NAME=pos_db  DB_USER=pos  DB_PASSWORD=...   (chmod 600)
 
 # Docker
@@ -166,9 +167,9 @@ Copy backups **off the server** too (another computer, cloud storage).
 | Symptom | Fix |
 |---|---|
 | "Cannot reach the database" | Check `DB_*` / `config.local.php`; is PostgreSQL running? Open `/api/index.php?route=health`. |
-| "tables are not installed yet" | Run `php bin/install.php` (Docker does it automatically at start). |
+| "tables are not installed yet" | From the `public/` directory, run `php bin/install.php` (Docker does it automatically at start). |
 | Page loads but everything says "server did not answer properly" | `docker compose logs app` or the Apache error log; usually `pdo_pgsql` missing or wrong DB password. |
 | Sign-in works but you are logged out immediately behind a proxy | Set `TRUST_PROXY=1` so the app knows the visit was HTTPS; make sure the proxy sends `X-Forwarded-Proto`. |
 | `setup.php` says it is switched off | Intended in production. Use `php bin/install.php`. |
 | Locked out after wrong passwords | Wait 15 minutes, or have an admin reset it under Users. |
-| Lost the admin password | `docker compose exec app php -r 'require "/var/www/html/api/installer.php"; $c=require "/var/www/html/api/config.php"; $p=pos_connect($c,$c["dbname"]); $s=pos_random_password(); $p->prepare("UPDATE users SET password_hash=?, active=TRUE WHERE username=?")->execute([password_hash($s,PASSWORD_DEFAULT),"admin"]); echo "New password: $s\n";'` |
+| Lost the admin password | `docker compose exec app php -r 'require "/var/www/html/api/installer.php"; $c=require "/var/www/config/config.php"; $p=pos_connect($c,$c["dbname"]); $s=pos_random_password(); $p->prepare("UPDATE users SET password_hash=?, active=TRUE WHERE username=?")->execute([password_hash($s,PASSWORD_DEFAULT),"admin"]); echo "New password: $s\n";'` |

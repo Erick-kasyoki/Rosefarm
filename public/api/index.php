@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/bootstrap.php';
-require __DIR__ . '/db.php';
+require dirname(__DIR__, 2) . '/config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -663,7 +663,7 @@ try {
     if (stripos($msg, 'could not connect') !== false || stripos($msg, 'password authentication') !== false || stripos($msg, 'Connection refused') !== false
         || stripos($msg, 'timeout expired') !== false || stripos($msg, 'could not translate host') !== false
         || (stripos($msg, 'does not exist') !== false && stripos($msg, 'database') !== false)) {
-        out(['error' => 'Cannot reach the database. ' . (cfg('debug') ? 'Check api/config.local.php or the DB_* environment variables and that PostgreSQL is running. (' . $msg . ')' : 'Please try again in a moment or contact the administrator.')], 503);
+        out(['error' => 'Cannot reach the database. ' . (cfg('debug') ? 'Check config/config.local.php or the DB_* environment variables and that PostgreSQL is running. (' . $msg . ')' : 'Please try again in a moment or contact the administrator.')], 503);
     }
     out(['error' => cfg('debug') ? 'Database error: ' . $msg : 'A database error occurred. Please try again or contact the administrator.'], 500);
 } catch (Throwable $e) {

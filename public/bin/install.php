@@ -12,7 +12,7 @@
  */
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require __DIR__ . '/../api/installer.php';
-$cfg = require __DIR__ . '/../api/config.php';
+$cfg = require dirname(__DIR__, 2) . '/config/config.php';
 
 $args = $argv ?? [];
 $wait = in_array('--wait', $args, true);

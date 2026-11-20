@@ -1,5 +1,5 @@
 <?php
-// Copy this file to config.local.php and edit it. config.local.php is ignored by git and blocked from the web.
+// Copy this file to config.local.php and edit it. config.local.php is ignored by git and kept outside the web root.
 // Use it where you cannot set environment variables (XAMPP, cPanel, shared hosting).
 return [
     'env'      => 'development',      // XAMPP / local testing. Remove this line (or use 'production') on a live server.

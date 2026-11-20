@@ -2,7 +2,7 @@
 /**
  * Application configuration.
  *
- * Precedence (later wins):   defaults below  <  api/config.local.php  <  environment variables
+ * Precedence (later wins):   defaults below  <  config/config.local.php  <  environment variables
  *
  * For a real deployment set environment variables (see .env.example / DEPLOYMENT.md).
  * On hosting without environment variables (XAMPP, cPanel), copy config.local.php.example

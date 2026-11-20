@@ -3,7 +3,7 @@
  * Runtime bootstrap shared by index.php (the app shell) and api/index.php (the JSON API):
  * configuration, PHP settings, timezone, security headers and hardened sessions.
  */
-$cfg = require __DIR__ . '/config.php';
+$cfg = require dirname(__DIR__, 2) . '/config/config.php';
 
 function cfg(string $key, $default = null) { global $cfg; return $cfg[$key] ?? $default; }
 function is_prod(): bool { return cfg('env') === 'production'; }

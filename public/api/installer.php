@@ -3,7 +3,7 @@
  * Installer logic shared by setup.php (browser, local only) and bin/install.php (command line).
  * Safe to run any number of times: it never overwrites or deletes existing data.
  */
-require_once __DIR__ . '/config.php';
+require_once dirname(__DIR__, 2) . '/config/config.php';
 
 function pos_quote_ident(string $n): string { return '"' . str_replace('"', '""', $n) . '"'; }
 
@@ -16,7 +16,7 @@ function pos_connect(array $c, string $dbname): PDO {
 function pos_explain(Throwable $e): string {
     $m = $e->getMessage();
     if (stripos($m, 'password authentication') !== false)
-        return 'PostgreSQL rejected the user/password. Check DB_USER / DB_PASSWORD (or api/config.local.php).';
+        return 'PostgreSQL rejected the user/password. Check DB_USER / DB_PASSWORD (or config/config.local.php).';
     if (stripos($m, 'could not connect') !== false || stripos($m, 'Connection refused') !== false || stripos($m, 'timeout') !== false || stripos($m, 'could not translate host') !== false)
         return 'Cannot reach PostgreSQL at the host and port in your configuration. Make sure the database server is running and DB_HOST / DB_PORT are correct.';
     return $m;
