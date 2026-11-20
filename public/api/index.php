@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/bootstrap.php';
-require dirname(__DIR__, 2) . '/config/database.php';
+require __DIR__ . '/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
